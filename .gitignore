@@ -1,2 +1,6 @@
 *.swp
 *~
+
+# wxpy autogenerate 
+wxpy.pkl
+dev/
