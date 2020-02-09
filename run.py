@@ -1,69 +1,51 @@
+#!/usr/bin/env python
+#coding: utf-8
+
 from wxpy import *
+import configparser
+import os
+import sys
+
+from util import *
+from atMessageHandler import at_message_handler
+
+cf = configparser.ConfigParser()
+if os.path.exists('config/my.conf'):
+    cf.read('config/my.conf', encoding="utf-8")
+else:
+    cf.read('config/default.conf', encoding="utf-8")
+
+group_names = cf.get('wechat', 'group_names').split(',')
+prefixText = cf.get('wechat', 'prefixText')
+
 bot = Bot(cache_path=True)
 allGroup = bot.groups()
 
-groupA = ensure_one(allGroup.search('测试机器人'))
-groupB = ensure_one(allGroup.search('测试2'))
+groups = name_to_groupList( group_names , allGroup)
+print(groups)
 
-prefixText = "(隔壁)"
-
-def sync_message_basic(msg, neighbor):
+@bot.register(groups)
+def sync_message(msg):
     try:
         # is_at 专指是否at机器人
         # at机器人的消息，均不转发
         if msg.is_at:
-            at_message_handler(msg, neighbor)
+            at_message_handler(msg, groups)
         else:
             if msg.type != 'Sharing' and msg.type != 'Recording' :
-                msg.forward(neighbor, prefix= prefixText + msg.member.name + ":" )
+                sync_message_in_groups(msg, groups, prefix = prefixText )
     except Exception as e:
-        print(e)
+        raise e
 
-def at_message_handler(msg, neighbor):
-        text = msg.text
-        index = text.find("\u2005")
-        # 当且仅当只有@sb 而无其它消息时，找不到字符\u2005。因为这时空格被自动去掉。
-        # 这种情况只回复机器人状态
-        if index == -1:
-            msg.reply('我在')
-        else:
-            plainText = text[index:].strip()
-            searchIndex = plainText.find('在不在')
-            if searchIndex > 0:
-                searchText = plainText [0: searchIndex].strip() 
-                resA=groupA.search(searchText)
-                resB=groupB.search(searchText)
-                replyText = searchText
-                if  neighbor == groupB :
-                    if len(resA) > 0:
-                        replyText += '在这个群里'
-                        if len(resB) > 0:
-                            replyText += '，也'
-                    if len(resB) > 0:
-                        replyText += '在隔壁群里'
-                    if replyText == searchText:
-                        replyText += '还没进群'
-                if  neighbor == groupA :
-                    if len(resB) > 0:
-                        replyText += '在这个群里'
-                        if len(resA) > 0:
-                            replyText += ',也'
-                    if len(resA) > 0:
-                        replyText += '在隔壁群里'
-                    if replyText == searchText:
-                        replyText += '还没进群'
-                msg.reply(replyText)
-            else:
-                msg.reply('查询示例："@回音壁 小明在不在"')
-
-
-@bot.register(groupA)
-def sync_message(msg):
-    sync_message_basic(msg, groupB)
-
-@bot.register(groupB)
-def sync_message(msg):
-    sync_message_basic(msg, groupA)
+# 只按需查询群信息，不同步消息
+atOnlyGroup_names = cf.get('wechat', 'group_names_atOnly').split(',')
+atOnlyGroups = name_to_groupList( atOnlyGroup_names, allGroup)
+print(atOnlyGroups)
+@bot.register(atOnlyGroups)
+def atOnlyGroups(msg):
+    if msg.is_at:
+        at_message_handler(msg, groups)
+    
 
 
 embed()

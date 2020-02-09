@@ -1,6 +1,8 @@
 *.swp
 *~
+config/my.conf
 
 # wxpy autogenerate 
 wxpy.pkl
 dev/
+__pycache__/
