@@ -25,12 +25,14 @@ def name_to_groupList( group_names, allGroup):
                 mark = input('继续(y/n)?')
                 if mark == 'n':
                     raise Exception("用户终止程序")
+                if mark == '\r':
+                    break;
                 if mark != 'y':
                     print('输入错误，请输入y或n')
             for group in res:
                 if group not in groups:
                     groups.append(group)
-        if resnum == 1:
+        if resnum == 1 and res[0] not in groups:
             groups.append(ensure_one(allGroup.search(name)))
     return groups
 

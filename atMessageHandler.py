@@ -26,10 +26,10 @@ def at_message_handler_isInGroup(fromGroup , searchText, groupList):
         if res[0] == fromGroup:
             replyText += '在这个群里'
         else:
-            if( len(groupList) == 2):
+            if len(groupList) == 2 and fromGroup in groupList:
                 replyText += '在隔壁群里'
             else:
-                replyText += '在群' + res.name +'里'
+                replyText += '在群“' + res[0].name +'”里'
     if resnum > 1:
         if len(groupList) == 2:
             replyText += '在这个群里'

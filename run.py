@@ -33,7 +33,7 @@ def sync_message(msg):
             at_message_handler(msg, groups)
         else:
             if msg.type != 'Sharing' and msg.type != 'Recording' :
-                sync_message_in_groups(msg, groups, prefix = prefixText )
+                sync_message_in_groups(msg, groups, prefix = prefixText + msg.member.name + ":" )
     except Exception as e:
         raise e
 
